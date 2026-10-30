@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     image: speechtexter:latest
     restart: unless-stopped
+    ports:
+      - "${PORT:-8085}:80"
     expose:
       - 80
     healthcheck:

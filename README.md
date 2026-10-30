@@ -92,6 +92,8 @@ If you prefer to deploy directly using Coolify's **Docker Compose Service**:
          dockerfile: Dockerfile
        image: speechtexter:latest
        restart: unless-stopped
+       ports:
+         - "8085:80"
        expose:
          - 80
        healthcheck:
