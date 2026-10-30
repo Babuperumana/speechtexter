@@ -7,8 +7,8 @@ services:
     restart: unless-stopped
     ports:
       - "${PORT:-8085}:80"
-    expose:
-      - 80
+    networks:
+      - coolify
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
@@ -26,3 +26,7 @@ services:
     labels:
       - "coolify.managed=true"
       - "coolify.type=service"
+
+networks:
+  coolify:
+    external: true
