@@ -1,7 +1,7 @@
 # Multi-architecture production Dockerfile for SpeechTexter
 # Supports ARM64 (Raspberry Pi 3/4/5), ARMv7 (32-bit Pi), and AMD64 (x86_64)
 
-FROM --platform=$TARGETPLATFORM nginx:alpine
+FROM nginx:alpine
 
 LABEL maintainer="SpeechTexter Self-Hosted"
 LABEL description="Free online speech-to-text dictation application"
