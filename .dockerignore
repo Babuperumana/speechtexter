@@ -1,0 +1,8 @@
+.git
+.github
+.agents
+.gemini
+node_modules
+npm-debug.log
+README.md
+*.tar.gz

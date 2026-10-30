@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SpeechTexter - Free Online Voice Typing & Speech to Text</title>
+  <meta name="description" content="Dictate with your voice in real-time. Free online multilingual voice typing, speech-to-text, and custom voice commands supporting over 120+ languages and dialects.">
+  <meta name="theme-color" content="#2563eb">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
+</head>
+<body>
+
+  <!-- HTTPS Security Warning Banner (Crucial for Web Speech API over LAN/Coolify) -->
+  <div id="httpsBanner" class="security-banner hidden">
+    <div>
+      ⚠️ <strong>HTTPS Required:</strong> Web Speech API requires a secure HTTPS connection or <code>localhost</code>. In Coolify, please attach a domain with an SSL certificate to enable voice recognition.
+    </div>
+    <button type="button" onclick="document.getElementById('httpsBanner').classList.add('hidden')" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
+  </div>
+
+  <div id="app" class="flex flex-col min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+      <div class="brand-section">
+        <a href="#" class="brand-logo" id="logoLink">
+          <div class="logo-icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" x2="12" y1="19" y2="22"></line>
+            </svg>
+          </div>
+          <span>SPEECHTEXTER</span>
+        </a>
+        <span class="brand-badge">Self-Hosted</span>
+      </div>
+
+      <div class="header-controls">
+        <!-- Language Selector Button -->
+        <button type="button" class="btn-header" id="langBtn" title="Change Language (Ctrl+Q)">
+          <span class="lang-flag-indicator" id="langFlag">🇺🇸</span>
+          <span class="lang-name-text" id="langName">English (United States)</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+
+        <!-- Voice Commands Drawer Toggle -->
+        <button type="button" class="btn-header" id="commandsToggleBtn" title="Voice Commands & Punctuation">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <span class="lang-name-text">Commands</span>
+        </button>
+
+        <!-- Text-to-Speech (Read Aloud) Button -->
+        <button type="button" class="btn-header" id="ttsPlayBtn" title="Read Aloud (TTS)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+          <span class="lang-name-text">Read Aloud</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button type="button" class="btn-header btn-icon-only" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+        </button>
+
+        <!-- Fullscreen Toggle -->
+        <button type="button" class="btn-header btn-icon-only" id="fullscreenBtn" title="Full Screen">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+        </button>
+
+        <!-- Settings Button -->
+        <button type="button" class="btn-header btn-icon-only" id="settingsBtn" title="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-container">
+      <div class="editor-wrapper">
+
+        <!-- Editor Toolbar -->
+        <div class="editor-toolbar">
+          <!-- Document Actions -->
+          <div class="tool-group">
+            <button type="button" class="tool-btn" id="btnNewNote" title="New Note">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            </button>
+
+            <!-- Download Dropdown -->
+            <div class="dropdown-wrap">
+              <button type="button" class="tool-btn" id="downloadToggleBtn" title="Download Note">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+              </button>
+              <div class="dropdown-menu hidden" id="downloadMenu">
+                <button type="button" class="dropdown-item" id="downloadTxtBtn">
+                  <span>📄</span> Download as Text (.txt)
+                </button>
+                <button type="button" class="dropdown-item" id="downloadDocBtn">
+                  <span>📝</span> Download as Word (.doc)
+                </button>
+                <button type="button" class="dropdown-item" id="downloadMdBtn">
+                  <span>📑</span> Download as Markdown (.md)
+                </button>
+                <button type="button" class="dropdown-item" id="downloadPdfBtn">
+                  <span>🖨️</span> Print / Save as PDF
+                </button>
+              </div>
+            </div>
+
+            <button type="button" class="tool-btn" id="btnPrintNote" title="Print Note">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
+            </button>
+
+            <button type="button" class="tool-btn" id="btnCopyAll" title="Copy All Text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Basic Formatting -->
+          <div class="tool-group">
+            <button type="button" class="tool-btn" id="btnBold" title="Bold (Ctrl+B)">
+              <strong>B</strong>
+            </button>
+            <button type="button" class="tool-btn" id="btnItalic" title="Italic (Ctrl+I)">
+              <em>I</em>
+            </button>
+            <button type="button" class="tool-btn" id="btnUnderline" title="Underline (Ctrl+U)">
+              <u>U</u>
+            </button>
+            <button type="button" class="tool-btn" id="btnStrikethrough" title="Strikethrough">
+              <s>S</s>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Headings & Lists -->
+          <div class="tool-group">
+            <button type="button" class="tool-btn" id="btnH1" title="Heading 1" style="font-weight:700;">H1</button>
+            <button type="button" class="tool-btn" id="btnH2" title="Heading 2" style="font-weight:600;">H2</button>
+            <button type="button" class="tool-btn" id="btnBulletList" title="Bulleted List">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+            </button>
+            <button type="button" class="tool-btn" id="btnNumberList" title="Numbered List">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" x2="21" y1="6" y2="6"/><line x1="10" x2="21" y1="12" y2="12"/><line x1="10" x2="21" y1="18" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Alignment -->
+          <div class="tool-group">
+            <button type="button" class="tool-btn" id="btnAlignLeft" title="Align Left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" x2="3" y1="6" y2="6"/><line x1="15" x2="3" y1="12" y2="12"/><line x1="17" x2="3" y1="18" y2="18"/></svg>
+            </button>
+            <button type="button" class="tool-btn" id="btnAlignCenter" title="Align Center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" x2="3" y1="6" y2="6"/><line x1="18" x2="6" y1="12" y2="12"/><line x1="21" x2="3" y1="18" y2="18"/></svg>
+            </button>
+            <button type="button" class="tool-btn" id="btnAlignRight" title="Align Right">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" x2="3" y1="6" y2="6"/><line x1="21" x2="9" y1="12" y2="12"/><line x1="21" x2="7" y1="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Case & Clean -->
+          <div class="tool-group">
+            <button type="button" class="tool-btn" id="btnCaseToggle" title="Toggle Sentence Case">aA</button>
+            <button type="button" class="tool-btn" id="btnClearFormat" title="Clear Formatting">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Undo & Redo -->
+          <div class="tool-group">
+            <button type="button" class="tool-btn" id="btnUndo" title="Undo (Ctrl+Z)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+            </button>
+            <button type="button" class="tool-btn" id="btnRedo" title="Redo (Ctrl+Y)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Status & Stats Bar -->
+        <div class="meta-status-bar">
+          <div class="status-badge" id="statusBadge">
+            <div class="status-dot"></div>
+            <span id="statusText">Ready to dictate</span>
+            <span id="speechTimer" class="timer-indicator">00:00</span>
+          </div>
+
+          <div class="stats-group">
+            <span id="saveStatusDisplay">Ready</span>
+            <span>•</span>
+            <span id="wordCountDisplay">0 words</span>
+            <span>•</span>
+            <span id="charCountDisplay">0 characters</span>
+          </div>
+        </div>
+
+        <!-- Floating Live Interim Preview Box -->
+        <div id="previewBox" class="preview-box hidden">
+          <div class="preview-dot"></div>
+          <span id="previewText"></span>
+        </div>
+
+        <!-- Main Editable Paper -->
+        <div id="textEditor" class="editor-paper" data-placeholder="Click the microphone or press [Escape] to start speaking..."></div>
+
+      </div>
+    </main>
+
+    <!-- Bottom Dictation Bar -->
+    <footer class="bottom-bar">
+      <div class="bottom-left">
+        <button type="button" class="btn-header" onclick="document.getElementById('btnCopyAll').click()" title="Copy all text">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+          <span>Copy</span>
+        </button>
+        <button type="button" class="btn-header" onclick="document.getElementById('btnUndo').click()" title="Undo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+        </button>
+        <button type="button" class="btn-header" onclick="document.getElementById('btnRedo').click()" title="Redo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg>
+        </button>
+      </div>
+
+      <!-- Center Big Microphone Button with Audio Visualizer Canvas -->
+      <div class="mic-center-area">
+        <canvas id="visualizerCanvas" class="mic-canvas" width="140" height="24"></canvas>
+        <div class="mic-btn-wrapper">
+          <div class="mic-pulse-ring" id="micPulseRing"></div>
+          <button type="button" class="btn-mic-main" id="micBtn" title="Start / Stop Dictation [Escape]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" x2="12" y1="19" y2="22"></line>
+            </svg>
+          </button>
+        </div>
+        <span class="mic-hint">Press [Escape] to toggle mic</span>
+      </div>
+
+      <div class="bottom-right">
+        <button type="button" class="btn-header" onclick="document.getElementById('commandsToggleBtn').click()" title="Voice Commands">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <span>Voice Commands</span>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Slide-out Voice Commands Drawer -->
+    <aside class="commands-drawer" id="commandsDrawer">
+      <div class="drawer-header">
+        <h3 class="modal-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          Voice Commands
+        </h3>
+        <button type="button" class="tool-btn" id="closeCommandsDrawerBtn" title="Close">✕</button>
+      </div>
+
+      <div class="drawer-content">
+        <div class="drawer-toolbar">
+          <button type="button" class="btn-primary" id="addCustomCommandBtn" style="padding:6px 12px; font-size:0.8rem;">+ Add Command</button>
+          <button type="button" class="btn-secondary" id="exportCommandsBtn" style="padding:6px 10px; font-size:0.8rem;">Export</button>
+          <button type="button" class="btn-secondary" id="importCommandsBtn" style="padding:6px 10px; font-size:0.8rem;">Import</button>
+          <button type="button" class="btn-secondary" id="resetCommandsBtn" style="padding:6px 10px; font-size:0.8rem;" title="Reset to defaults">Reset</button>
+          <input type="file" id="importFileInput" accept=".json" style="display:none;">
+        </div>
+
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">
+          Say any of these phrases while speaking to automatically insert punctuation or formatting:
+        </p>
+
+        <div id="commandsListContainer" style="display:flex; flex-direction:column; gap:6px;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Language Selector Modal -->
+    <div class="modal-overlay hidden" id="langModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            Select Language & Dialect
+          </h3>
+          <button type="button" class="tool-btn" id="closeLangModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="lang-search-box">
+            <input type="text" class="lang-search-input" id="langSearchInput" placeholder="Search by language, country, or code (e.g., Malayalam, Spanish, es-MX)...">
+          </div>
+          <div class="lang-list" id="langListContainer">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Command Modal -->
+    <div class="modal-overlay hidden" id="customCommandModal">
+      <div class="modal-card" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3 class="modal-title">Add Custom Voice Command</h3>
+          <button type="button" class="tool-btn" id="closeCustomCommandModalBtn">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:600;">Spoken Trigger Word / Phrase:</label>
+            <input type="text" class="form-input" id="customTriggerInput" placeholder="e.g. smile face, hashtag, my email">
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:600;">Replacement Symbol or Text:</label>
+            <input type="text" class="form-input" id="customReplacementInput" placeholder="e.g. 😊, #, user@example.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('customCommandModal').classList.add('hidden')">Cancel</button>
+          <button type="button" class="btn-primary" id="saveCustomCommandBtn">Save Command</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preferences / Settings Modal -->
+    <div class="modal-overlay hidden" id="settingsModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1h31a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Settings & Dictation Options
+          </h3>
+          <button type="button" class="tool-btn" id="closeSettingsModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Autosave -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Autosave Note</span>
+              <span class="setting-desc">Automatically saves note content to local browser storage so work is never lost.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="isAutoSaveOn">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Preview Box -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Transcription Preview Box</span>
+              <span class="setting-desc">Displays a floating box with interim recognition results before inserting into note.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="usePreviewBox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Voice Commands -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Enable Voice Commands</span>
+              <span class="setting-desc">Replaces spoken punctuation words ("period", "comma", etc.) with punctuation marks.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="isVoiceCommandsOn">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Auto Capitalize Sentence -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Capitalize New Sentence</span>
+              <span class="setting-desc">Automatically capitalizes the first letter of a sentence after a period or question mark.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="capitalizeSentence">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Auto Capitalize Paragraph -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Capitalize New Paragraph</span>
+              <span class="setting-desc">Capitalizes the first letter when speaking onto a new line or paragraph.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="capitalizeParagraph">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Capitalize Every Letter -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Capitalize Every Letter</span>
+              <span class="setting-desc">Outputs all dictated speech in UPPERCASE.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="capitalizeEveryLetter">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Paste as Plain Text -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Paste as Plain Text</span>
+              <span class="setting-desc">Strips formatting when pasting text from clipboard into editor.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pastePlainText">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Copy All as Plain Text -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Copy All as Plain Text</span>
+              <span class="setting-desc">Copies note text without HTML tags using the Copy button.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="copyAllAsPlainText">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Longest Transcription Alternative -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Select Longest Alternative</span>
+              <span class="setting-desc">Prevents truncated sentences during fast speech by preferring the longest returned result.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="useLongestAlternative">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Font Size Adjuster -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Editor Font Size</span>
+              <span class="setting-desc">Adjust default font size in points.</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" class="stepper-btn" id="fontSizeMinusBtn">-</button>
+              <span class="stepper-value" id="fontSizeValue">16</span>
+              <button type="button" class="stepper-btn" id="fontSizePlusBtn">+</button>
+            </div>
+          </div>
+
+          <!-- Font Family Selector -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Editor Font Family</span>
+              <span class="setting-desc">Select typeface for writing.</span>
+            </div>
+            <select class="setting-select" id="fontSelect">
+              <option value="'Inter', sans-serif">Inter (Modern Sans)</option>
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+            </select>
+          </div>
+
+          <!-- Layout Reverse -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Layout Reverse</span>
+              <span class="setting-desc">Swaps sidebar and editor direction on wide displays.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="layoutReverse">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Developer Mode -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Developer Mode</span>
+              <span class="setting-desc">Show raw Web Speech API confidence levels and transcript diagnostics.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="developerMode">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Developer Diagnostics Panel (Hidden by default) -->
+    <div id="devDebugPanel" class="hidden" style="max-height:180px; overflow-y:auto; background:var(--bg-subtle); border-top:1px solid var(--border-light); padding:10px 20px;">
+      <div style="font-size:0.8rem; font-weight:700; margin-bottom:4px;">Developer Speech-to-Text Diagnostics:</div>
+      <div id="devDebugContent"></div>
+    </div>
+
+  </div>
+
+  <!-- Notification Snackbar / Toast -->
+  <div id="snackbar" class="snackbar"></div>
+
+  <!-- Application Entry Point -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

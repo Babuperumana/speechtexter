@@ -1,0 +1,21 @@
+{
+  "name": "speechtexter-selfhosted",
+  "version": "1.0.0",
+  "description": "SpeechTexter self-hosted clone with 120+ language support, custom voice commands, and Coolify deployment for Raspberry Pi",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "speech-to-text",
+    "voice-typing",
+    "speechtexter",
+    "coolify",
+    "raspberry-pi",
+    "multilingual"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
